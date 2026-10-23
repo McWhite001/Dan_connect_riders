@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dan-Connect — Book a Ride</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a1a2e; }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+    header span { font-size: 12px; color: #a0aec0; }
+
+    .tabs {
+      display: flex;
+      background: #16213e;
+      border-bottom: 2px solid #0f3460;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 12px 8px;
+      background: none;
+      border: none;
+      color: #a0aec0;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: #e94560;
+      border-bottom: 2px solid #e94560;
+      font-weight: 600;
+    }
+
+    .tab-content { display: none; padding: 20px; max-width: 600px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 18px; margin-bottom: 16px; color: #1a1a2e; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border 0.2s;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: #e94560;
+    }
+
+    .vehicle-selector { display: flex; gap: 12px; }
+    .vehicle-option {
+      flex: 1;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .vehicle-option:hover { border-color: #e94560; }
+    .vehicle-option.selected { border-color: #e94560; background: #fff5f7; }
+    .vehicle-option .icon { font-size: 28px; }
+    .vehicle-option .label { font-size: 13px; font-weight: 600; margin-top: 6px; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-secondary:hover { opacity: 0.85; }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .booking-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-left: 4px solid #e94560;
+    }
+    .booking-card .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .booking-card .name { font-weight: 700; font-size: 15px; }
+    .booking-card .vehicle-tag {
+      background: #1a1a2e;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+    .booking-card .route { font-size: 13px; color: #4a5568; margin-bottom: 4px; }
+    .booking-card .route span { color: #e94560; font-weight: 600; }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-Pending { background: #fef3c7; color: #92400e; }
+    .status-Accepted { background: #d1fae5; color: #065f46; }
+    .status-InTransit { background: #dbeafe; color: #1e40af; }
+    .status-Completed { background: #e0e7ff; color: #3730a3; }
+    .status-Cancelled { background: #fee2e2; color: #991b1b; }
+
+    .driver-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .driver-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .driver-info { flex: 1; min-width: 0; }
+    .driver-info .dname { font-weight: 700; font-size: 15px; }
+    .driver-info .ddetails { font-size: 12px; color: #718096; margin-top: 2px; }
+    .driver-status {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .ds-Available { background: #d1fae5; color: #065f46; }
+    .ds-OnTrip { background: #dbeafe; color: #1e40af; }
+    .ds-Offline { background: #f3f4f6; color: #6b7280; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a2e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 999;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show { display: block; animation: fadein 0.3s; }
+    @keyframes fadein { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    .empty { text-align: center; color: #a0aec0; padding: 40px 0; font-size: 14px; }
+    .empty .icon { font-size: 40px; margin-bottom: 10px; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #718096; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .action-btn {
+      padding: 6px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s;
+    }
+    .action-btn:hover { background: #e94560; color: white; border-color: #e94560; }
+
+    .success-banner {
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚖 Dan-Connect</h1>
+  <span>Ride booking made easy</span>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('book', this)">📍 Book Ride</button>
+  <button class="tab-btn" onclick="switchTab('bookings', this)">📋 Bookings</button>
+  <button class="tab-btn" onclick="switchTab('drivers', this)">🚗 Drivers</button>
+  <button class="tab-btn" onclick="switchTab('register', this)">➕ Register</button>
+</div>
+
+<!-- BOOK RIDE -->
+<div class="tab-content active" id="tab-book">
+  <div class="card">
+    <h2>Book a Ride</h2>
+    <div id="book-success" class="success-banner">✅ Booking confirmed! A driver will contact you soon.</div>
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="p_name" placeholder="Enter your full name" />
+    </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" id="p_phone" placeholder="e.g. 08012345678" />
+    </div>
+    <div class="form-group">
+      <label>Pickup Location</label>
+      <input type="text" id="p_pickup" placeholder="Where are you?" />
+    </div>
+    <div class="form-group">
+      <label>Destination</label>
+      <input type="text" id="p_dest" placeholder="Where are you going?" />
+    </div>
+    <div class="form-group">
+      <label>Choose Vehicle</label>
+      <div class="vehicle-selector">
+        <div class="vehicle-option" id="v-car" onclick="selectVehicle('Car')">
+          <div class="icon">🚗</div>
+          <div class="label">Car</div>
+        </div>
+        <div class="vehicle-option" id="v-keke" onclick="selectVehicle('Keke')">
+          <div class="icon">🛺</div>
+          <div class="label">Keke</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Extra Notes (optional)</label>
+      <textarea id="p_notes" rows="2" placeholder="Any special instructions..."></textarea>
+    </div>
+    <button class="btn" id="book-btn" onclick="submitBooking()">Book Now 🚀</button>
+  </div>
+</div>
+
+<!-- BOOKINGS -->
+<div class="tab-content" id="tab-bookings">
+  <div class="section-title">All Bookings</div>
+  <div id="bookings-list">
+    <div class="empty"><div class="icon">📋</div>Loading bookings...</div>
+  </div>
+</div>
+
+<!-- DRIVERS -->
+<div class="tab-content" id="tab-drivers">
+  <div class="section-title">Registered Drivers</div>
+  <div id="drivers-list">
+    <div class="empty"><div class="icon">🚗</div>Loading drivers...</div>
+  </div>
+</div>
+
+<!-- REGISTER DRIVER -->
+<div class="tab-content" id="tab-register">
+  <div class="card">
+    <h2>Driver Registration</h2>
+    <div id="reg-success" class="success-banner">✅ Driver registered successfully! Welcome aboard 🎉</div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="d_name" placeholder="Driver's full name" />
+    </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" id="d_phone" placeholder="e.g. 08012345678" />
+    </div>
+    <div class="form-group">
+      <label>Vehicle Type</label>
+      <div class="vehicle-selector">
+        <div class="vehicle-option" id="dv-car" onclick="selectDriverVehicle('Car')">
+          <div class="icon">🚗</div>
+          <div class="label">Car</div>
+        </div>
+        <div class="vehicle-option" id="dv-keke" onclick="selectDriverVehicle('Keke')">
+          <div class="icon">🛺</div>
+          <div class="label">Keke</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Vehicle Number</label>
+      <input type="text" id="d_vnum" placeholder="e.g. ABJ-123-AA" style="text-transform:uppercase" />
+    </div>
+    <button class="btn-secondary" id="reg-btn" onclick="registerDriver()">Register as Driver 🚗</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const BASE_URL = 'https://supa-2b3f405a.base44.app/functions';
+  let selectedVehicle = '';
+  let selectedDriverVehicle = '';
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    el.classList.add('active');
+    if (tab === 'bookings') loadBookings();
+    if (tab === 'drivers') loadDrivers();
+  }
+
+  function selectVehicle(type) {
+    selectedVehicle = type;
+    document.getElementById('v-car').classList.toggle('selected', type === 'Car');
+    document.getElementById('v-keke').classList.toggle('selected', type === 'Keke');
+  }
+
+  function selectDriverVehicle(type) {
+    selectedDriverVehicle = type;
+    document.getElementById('dv-car').classList.toggle('selected', type === 'Car');
+    document.getElementById('dv-keke').classList.toggle('selected', type === 'Keke');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function getStatusClass(status) {
+    return 'status-' + status.replace(' ', '');
+  }
+
+  function getDriverStatusClass(status) {
+    return 'ds-' + status.replace(' ', '');
+  }
+
+  async function submitBooking() {
+    const name = document.getElementById('p_name').value.trim();
+    const phone = document.getElementById('p_phone').value.trim();
+    const pickup = document.getElementById('p_pickup').value.trim();
+    const dest = document.getElementById('p_dest').value.trim();
+    const notes = document.getElementById('p_notes').value.trim();
+
+    if (!name || !phone || !pickup || !dest || !selectedVehicle) {
+      showToast('⚠️ Please fill all fields and select a vehicle');
+      return;
+    }
+
+    const btn = document.getElementById('book-btn');
+    btn.disabled = true;
+    btn.textContent = 'Booking...';
+
+    try {
+      const res = await fetch(BASE_URL + '/createBooking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passenger_name: name, passenger_phone: phone, pickup_location: pickup, destination: dest, vehicle_type: selectedVehicle, notes })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('book-success').style.display = 'block';
+        document.getElementById('p_name').value = '';
+        document.getElementById('p_phone').value = '';
+        document.getElementById('p_pickup').value = '';
+        document.getElementById('p_dest').value = '';
+        document.getElementById('p_notes').value = '';
+        selectedVehicle = '';
+        document.querySelectorAll('#tab-book .vehicle-option').forEach(v => v.classList.remove('selected'));
+        setTimeout(() => document.getElementById('book-success').style.display = 'none', 5000);
+      } else {
+        showToast('❌ ' + (data.error || 'Something went wrong'));
+      }
+    } catch (e) {
+      showToast('❌ Network error. Please try again.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Book Now 🚀';
+  }
+
+  async function loadBookings() {
+    const container = document.getElementById('bookings-list');
+    container.innerHTML = '<div class="empty"><div class="icon">⏳</div>Loading...</div>';
+    try {
+      const res = await fetch(BASE_URL + '/getBookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const data = await res.json();
+      if (!data.bookings || data.bookings.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="icon">📋</div>No bookings yet.</div>';
+        return;
+      }
+      container.innerHTML = data.bookings.map(b => `
+        <div class="booking-card">
+          <div class="top">
+            <div class="name">👤 ${b.passenger_name}</div>
+            <div class="vehicle-tag">${b.vehicle_type === 'Car' ? '🚗' : '🛺'} ${b.vehicle_type}</div>
+          </div>
+          <div class="route">📍 ${b.pickup_location} <span>→</span> 🏁 ${b.destination}</div>
+          <div class="route">📞 ${b.passenger_phone}</div>
+          ${b.driver_name ? `<div class="route">🧑‍✈️ Driver: <b>${b.driver_name}</b></div>` : ''}
+          <span class="status-badge ${getStatusClass(b.status)}">${b.status}</span>
+          ${b.status === 'Pending' ? `
+          <div class="action-btns">
+            <button class="action-btn" onclick="updateStatus('${b.id}', 'Accepted')">✅ Accept</button>
+            <button class="action-btn" onclick="updateStatus('${b.id}', 'Cancelled')">❌ Cancel</button>
+          </div>` : ''}
+          ${b.status === 'Accepted' ? `
+          <div class="action-btns">
+            <button class="action-btn" onclick="updateStatus('${b.id}', 'In Transit')">🚀 Start Trip</button>
+          </div>` : ''}
+          ${b.status === 'In Transit' ? `
+          <div class="action-btns">
+            <button class="action-btn" onclick="updateStatus('${b.id}', 'Completed')">🏁 Complete</button>
+          </div>` : ''}
+        </div>
+      `).join('');
+    } catch (e) {
+      container.innerHTML = '<div class="empty"><div class="icon">❌</div>Failed to load bookings.</div>';
+    }
+  }
+
+  async function updateStatus(id, status) {
+    try {
+      const res = await fetch(BASE_URL + '/updateBookingStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: id, status })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('✅ Status updated to ' + status);
+        loadBookings();
+      } else {
+        showToast('❌ ' + data.error);
+      }
+    } catch (e) {
+      showToast('❌ Network error.');
+    }
+  }
+
+  async function loadDrivers() {
+    const container = document.getElementById('drivers-list');
+    container.innerHTML = '<div class="empty"><div class="icon">⏳</div>Loading...</div>';
+    try {
+      const res = await fetch(BASE_URL + '/getDrivers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const data = await res.json();
+      if (!data.drivers || data.drivers.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="icon">🚗</div>No drivers registered.</div>';
+        return;
+      }
+      container.innerHTML = data.drivers.map(d => `
+        <div class="driver-card">
+          <div class="driver-avatar">${d.vehicle_type === 'Car' ? '🚗' : '🛺'}</div>
+          <div class="driver-info">
+            <div class="dname">${d.full_name}</div>
+            <div class="ddetails">📞 ${d.phone} &nbsp;|&nbsp; 🚘 ${d.vehicle_number}</div>
+            <div class="ddetails">⭐ ${d.rating || '0'} &nbsp;|&nbsp; 🏁 ${d.total_trips || 0} trips</div>
+          </div>
+          <span class="driver-status ${getDriverStatusClass(d.status)}">${d.status}</span>
+        </div>
+      `).join('');
+    } catch (e) {
+      container.innerHTML = '<div class="empty"><div class="icon">❌</div>Failed to load drivers.</div>';
+    }
+  }
+
+  async function registerDriver() {
+    const name = document.getElementById('d_name').value.trim();
+    const phone = document.getElementById('d_phone').value.trim();
+    const vnum = document.getElementById('d_vnum').value.trim().toUpperCase();
+
+    if (!name || !phone || !selectedDriverVehicle || !vnum) {
+      showToast('⚠️ Please fill all fields and select vehicle type');
+      return;
+    }
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true;
+    btn.textContent = 'Registering...';
+
+    try {
+      const res = await fetch(BASE_URL + '/registerDriver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: name, phone, vehicle_type: selectedDriverVehicle, vehicle_number: vnum })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('reg-success').style.display = 'block';
+        document.getElementById('d_name').value = '';
+        document.getElementById('d_phone').value = '';
+        document.getElementById('d_vnum').value = '';
+        selectedDriverVehicle = '';
+        document.querySelectorAll('#tab-register .vehicle-option').forEach(v => v.classList.remove('selected'));
+        setTimeout(() => document.getElementById('reg-success').style.display = 'none', 5000);
+      } else {
+        showToast('❌ ' + (data.error || 'Registration failed'));
+      }
+    } catch (e) {
+      showToast('❌ Network error. Please try again.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Register as Driver 🚗';
+  }
+</script>
+</body>
+</html>
